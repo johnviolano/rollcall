@@ -1,12 +1,11 @@
 {
-   "type": "mysql",
+   "type": "postgres",
    "host": "db",
-   "port": 3306,
+   "port": 5432,
    "username": "rcdbuser",
    "database": "rollcall",
    "synchronize": true,
    "logging": false,
-   "charset": "utf8mb4",
    "entities": [
       "src/entity/**/*.ts"
    ],

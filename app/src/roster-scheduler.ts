@@ -1,4 +1,4 @@
-import { getManager } from "typeorm";
+import { getManager, Not, IsNull } from "typeorm";
 import { Server } from "./entity/server";
 import { CronJob } from "cron";
 import Rollcaller from "./rollcaller";
@@ -53,7 +53,7 @@ class RosterScheduler {
 
     async loadSchedules() {
         const em = getManager();
-        const servers = await em.find(Server);
+        const servers = await em.find(Server, { where: { dailyRollcallTime: Not(IsNull()) } });
         for(const s of servers) {
             this.setSchedule( s.server, s.channel, s.dailyRollcallTime)
         }

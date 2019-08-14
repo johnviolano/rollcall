@@ -2,23 +2,25 @@ version: "3.1"
 
 services:
   db:
-    image: mysql:5.7
+    image: postgres
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
     environment:
-      MYSQL_DATABASE: rollcall
-      MYSQL_USER: rcdbuser
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
-      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      POSTGRES_DB: rollcall
+      POSTGRES_USER: rcdbuser
+      POSTGRES_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
     secrets:
         - db_root_password
         - db_password
     ports:
-      - '3306:3306'
-    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+      - '5432:5432'
+    restart: always
 
   app:
     build: ./app
     environment:
-      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
       DISCORD_TOKEN_FILE: /run/secrets/discord_token
     secrets:
         - db_password

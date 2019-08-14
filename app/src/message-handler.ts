@@ -41,8 +41,8 @@ class DiscordListener {
       // TODO: use a cache
       const em = getManager();
       const entity = await em.findOne(Server, msg.guild.id);
-      if(entity.inTokens.includes(cmd)) cmd = "in";
-      else if (entity.outTokens.includes(cmd)) cmd = "out";
+      if(entity && entity.inTokens.includes(cmd)) cmd = "in";
+      else if (entity && entity.outTokens.includes(cmd)) cmd = "out";
       else return; // Standard command or custom token not present
     }
 

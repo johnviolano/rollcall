@@ -11,7 +11,7 @@ async function run() {
     // Connect to database
     try {
         const connectionOptions = await getConnectionOptions() as MysqlConnectionOptions;
-        Object.assign(connectionOptions, { password: readFileSync(process.env.MYSQL_PASSWORD_FILE, "utf8").trim() });
+        Object.assign(connectionOptions, { password: readFileSync(process.env.POSTGRES_PASSWORD_FILE, "utf8").trim() });
         const connection = await createConnection(connectionOptions);
         const servers = await connection.manager.find(Server);
         if (servers)

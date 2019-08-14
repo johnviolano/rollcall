@@ -14,6 +14,10 @@ export default class Away implements Command {
         embed.setTitle("Away");
         const em = getManager();
         const entity = await em.findOne(Server, message.guild.id);
+        if (!entity) {
+            message.channel.send("No roll call scheduled for this channel.")
+            return;
+        }
 
         const i = entity.away.indexOf(message.member.id);
         if (i > -1) {
