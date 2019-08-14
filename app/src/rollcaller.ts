@@ -9,6 +9,8 @@ export default class Rollcaller {
 
         const em = getManager();
         const entity = await em.findOne(Server, server);
+        if(!entity) return;
+
         const embed = await Rollcaller.createEmbed(entity);
         const mentions = Rollcaller.getMentions(entity);
         const channel = DiscordClient.channels.get(entity.channel) as TextChannel;
@@ -29,14 +31,22 @@ export default class Rollcaller {
 
         const em = getManager();
         const entity = await em.findOne(Server, server);
+        if(!entity) return;
 
-        if (entity.currentRoster.message === null) {
+        if (!entity.currentRoster.message) {
             Rollcaller.rollcall(server);
         }
         else {
-            const channel = DiscordClient.channels.get(entity.channel) as TextChannel;
-            const message = await channel.fetchMessage(entity.currentRoster.message);
-            message.edit(this.getMentions(entity), await this.createEmbed(entity));
+            try {
+                const channel = DiscordClient.channels.get(entity.channel) as TextChannel;
+                const message = await channel.fetchMessage(entity.currentRoster.message);
+                message.edit(this.getMentions(entity), await this.createEmbed(entity));
+            } catch(error) {
+                console.error(error);
+                console.info("Attempting to recover by creating new message.");
+                // Message may have been deleted by user
+                Rollcaller.rollcall(server);
+            }
         }
     }
 
@@ -45,8 +55,11 @@ export default class Rollcaller {
         const em = getManager();
         const entity = await em.findOne(Server, server);
         if (!entity) return;
+
         entity.currentRoster = new Roster();
         em.save(entity);
+
+        if(!entity.channel) return;
 
         const channel = DiscordClient.channels.get(entity.channel) as TextChannel;
         const pins = await channel.fetchPinnedMessages();

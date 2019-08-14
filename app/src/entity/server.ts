@@ -15,12 +15,12 @@ export const DEFAULT_OUT_TOKENS = ["no", "nope", "nah", "n", "out"];
 
 @Entity()
 export class Server {
-    constructor(server: string, channel: string, rollcallTime?: string[]) {
+    constructor(server: string, channel?: string, rollcallTime?: string[]) {
         this.server = server;
-        this.channel = channel;
-        if(rollcallTime)
-            this.dailyRollcallTime = rollcallTime;
-
+        this.channel = null;
+        if(channel) this.channel = channel;
+        this.dailyRollcallTime = null;
+        if(rollcallTime) this.dailyRollcallTime = rollcallTime;
         this.currentRoster = new Roster();
         this.allInGifUrls = ALL_IN_IMAGES;
         this.allOutGifUrls = ALL_OUT_IMAGES;
@@ -33,7 +33,7 @@ export class Server {
     @PrimaryColumn({ update: false })
     server: string; // server ("guild.id") snowflake
 
-    @Column({ update: false })
+    @Column({ nullable: true })
     channel: string; // channel snowflake
 
     @Column({ type: "simple-array", nullable: true })

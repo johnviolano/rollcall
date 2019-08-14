@@ -2,6 +2,7 @@ import { Column } from "typeorm";
 
 export class Roster {
     constructor() {
+        this.message = null;
         this.in = new Array<string>();
         this.out = new Array<string>();
     }

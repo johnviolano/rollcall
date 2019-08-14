@@ -9,7 +9,7 @@ class RosterScheduler {
 
     async clearSchedule(server: string) {
 
-        // Remove from runtime
+        // Remove jobs from runtime
         if(this.cronJobs.has(server)) {
             const oldJobs = this.cronJobs.get(server);
             oldJobs[0].stop();
@@ -17,12 +17,15 @@ class RosterScheduler {
             this.cronJobs.delete(server);
         }
 
-        // Remove from db
+        // Clear any existing rosters
+        await Rollcaller.clear(server)
+
+        // Remove schedule
         const em = getManager();
         let entity = await em.findOne(Server, server);
         if(entity) {
             entity.dailyRollcallTime = null;
-            entity.currentRoster = new Roster();
+            entity.channel = null;
             em.save(entity);
         }
     }
@@ -31,13 +34,20 @@ class RosterScheduler {
 
         const em = getManager();
         let entity = await em.findOne(Server, server);
-        if (!entity)
+        // If no server config exists at all, create one with a schedule
+        if (!entity) {
             entity = new Server(server, channel, rollcallTime);
-        else
-            entity.dailyRollcallTime = rollcallTime;
+        } else {
+            // Clear any existing schedule and roster
+            await this.clearSchedule(server);
 
+            // Set new channel and time
+            entity.channel = channel;
+            entity.dailyRollcallTime = rollcallTime;
+        }
         await em.save(entity);
 
+        // Create the rollcall and clear jobs
         const rollcall = new CronJob(`0 ${rollcallTime[1]} ${rollcallTime[0]} * * *`,
                 () => Rollcaller.rollcall(server), null, true, "UTC");
 

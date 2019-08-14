@@ -20,7 +20,7 @@ export default class Schedule implements Command {
         if (args.length === 0) {
             const em = getManager();
             const entity = await em.findOne(Server, message.guild.id);
-            if(entity && entity.dailyRollcallTime)
+            if(entity && entity.dailyRollcallTime && entity.channel === message.channel.id)
                 embed.setDescription(`Roll call scheduled in this channel for ${entity.dailyRollcallTime[0]}:${entity.dailyRollcallTime[1]}`);
             else
                 embed.setDescription("No roll call scheduled for this channel.")
