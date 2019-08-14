@@ -1,0 +1,27 @@
+{
+  "name": "rollcall",
+  "version": "1.0.0",
+  "description": "Discord bot used to see a roster of people who are down to play games on a daily basis.",
+  "main": "build/app.js",
+  "dependencies": {
+    "cron": "^1.7.1",
+    "discord.js": "^11.5.1",
+    "mysql": "^2.17.1",
+    "probe-image-size": "^4.1.1",
+    "reflect-metadata": "^0.1.13",
+    "ts-node": "^8.3.0",
+    "typeorm": "^0.2.18"
+  },
+  "devDependencies": {
+    "@types/cron": "^1.7.1",
+    "@types/node": "^12.7.1",
+    "discord.js-typings": "github:discordjs/discord.js-typings",
+    "tslint": "^5.18.0",
+    "typescript": "^3.5.3"
+  },
+  "scripts": {
+    "start": "ts-node src/app.ts"
+  },
+  "author": "",
+  "license": "ISC"
+}

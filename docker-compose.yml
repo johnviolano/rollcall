@@ -1,0 +1,36 @@
+version: "3.1"
+
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: rollcall
+      MYSQL_USER: rcdbuser
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+        - db_root_password
+        - db_password
+    ports:
+      - '3306:3306'
+    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+
+  app:
+    build: ./app
+    environment:
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      DISCORD_TOKEN_FILE: /run/secrets/discord_token
+    secrets:
+        - db_password
+        - discord_token
+    depends_on:
+      - db
+    restart: always
+
+secrets:
+  db_password:
+    file: secrets/db_password.txt
+  db_root_password:
+    file: secrets/db_root_password.txt
+  discord_token:
+    file: secrets/discord_token.txt
