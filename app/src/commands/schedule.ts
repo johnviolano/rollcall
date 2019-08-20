@@ -1,6 +1,6 @@
 import { Command } from "../command-interface"
 import { Message, RichEmbed } from "discord.js";
-import { Scheduler } from "../roster-scheduler";
+import { Scheduler } from "../scheduler";
 import { getManager } from "typeorm";
 import { Server } from "../entity/server";
 
@@ -20,8 +20,10 @@ export default class Schedule implements Command {
         if (args.length === 0) {
             const em = getManager();
             const entity = await em.findOne(Server, message.guild.id);
-            if(entity && entity.dailyRollcallTime && entity.channel === message.channel.id)
-                embed.setDescription(`Roll call scheduled in this channel for ${entity.dailyRollcallTime[0]}:${entity.dailyRollcallTime[1]}`);
+            if(entity && entity.server) {
+                embed.setDescription(`Roll call scheduled in this channel for \
+                    ${entity.schedule.dailyRollcallTime[0]}:${entity.schedule.dailyRollcallTime[1]}`);
+            }
             else
                 embed.setDescription("No roll call scheduled for this channel.")
             message.channel.send(embed);

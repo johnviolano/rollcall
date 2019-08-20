@@ -5,7 +5,7 @@ import { DiscordClient } from "./discord-client";
 import { Listener } from "./message-handler";
 import { MysqlConnectionOptions } from "typeorm/driver/mysql/MysqlConnectionOptions";
 import { readFileSync } from 'fs';
-import { Scheduler } from "./roster-scheduler";
+import { Scheduler } from "./scheduler";
 
 async function run() {
     // Connect to database

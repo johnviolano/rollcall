@@ -13,7 +13,7 @@ export default class Rollcaller {
 
         const embed = await Rollcaller.createEmbed(entity);
         const mentions = Rollcaller.getMentions(entity);
-        const channel = DiscordClient.channels.get(entity.channel) as TextChannel;
+        const channel = DiscordClient.channels.get(entity.schedule.channel) as TextChannel;
 
         const pins = await channel.fetchPinnedMessages();
         for (const p of pins.values()) {
@@ -38,9 +38,14 @@ export default class Rollcaller {
         }
         else {
             try {
-                const channel = DiscordClient.channels.get(entity.channel) as TextChannel;
+                const channel = DiscordClient.channels.get(entity.schedule.channel) as TextChannel;
                 const message = await channel.fetchMessage(entity.currentRoster.message);
-                message.edit(this.getMentions(entity), await this.createEmbed(entity));
+                const embed = await Rollcaller.createEmbed(entity);
+                let mentions = "";
+                // only send mentions if the rollcall already fired for the day, i.e. be less spammy
+                if(message.content)
+                    mentions = Rollcaller.getMentions(entity);
+                message.edit(mentions, embed);
             } catch(error) {
                 console.error(error);
                 console.info("Attempting to recover by creating new message.");
@@ -59,9 +64,9 @@ export default class Rollcaller {
         entity.currentRoster = new Roster();
         em.save(entity);
 
-        if(!entity.channel) return;
+        if(!entity.schedule.channel) return;
 
-        const channel = DiscordClient.channels.get(entity.channel) as TextChannel;
+        const channel = DiscordClient.channels.get(entity.schedule.channel) as TextChannel;
         const pins = await channel.fetchPinnedMessages();
         for (const p of pins.values()) {
             if (p.author === DiscordClient.user)
@@ -124,7 +129,7 @@ export default class Rollcaller {
 
     private static getMentions(server: Server): string {
         // Get all members of the channel
-        const channel = DiscordClient.channels.get(server.channel) as TextChannel;
+        const channel = DiscordClient.channels.get(server.schedule.channel) as TextChannel;
         let members = channel.members.filter(m => !m.user.bot);
 
         // Prune away members

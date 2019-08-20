@@ -21,7 +21,7 @@ export default class In implements Command {
     async exec(message: Message, args: string[]) {
         const em = getManager();
         const entity = await em.findOne(Server, message.guild.id);
-        if (!entity || !entity.channel || (entity.channel != message.channel.id)) {
+        if (!entity || !entity.schedule) {
             message.channel.send("No roll call scheduled for this channel.")
             return;
         }

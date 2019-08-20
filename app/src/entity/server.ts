@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryColumn } from "typeorm";
 import { Roster } from "./roster";
+import { Schedule } from "./schedule";
 
 const ALL_IN_IMAGES = [
     "https://media.giphy.com/media/P8mXVA3KMqVgc/giphy.gif",
@@ -15,13 +16,10 @@ export const DEFAULT_OUT_TOKENS = ["no", "nope", "nah", "n", "out"];
 
 @Entity()
 export class Server {
-    constructor(server: string, channel?: string, rollcallTime?: string[]) {
+    constructor(server: string) {
         this.server = server;
-        this.channel = null;
-        if(channel) this.channel = channel;
-        this.dailyRollcallTime = null;
-        if(rollcallTime) this.dailyRollcallTime = rollcallTime;
         this.currentRoster = new Roster();
+        this.schedule = null;
         this.allInGifUrls = ALL_IN_IMAGES;
         this.allOutGifUrls = ALL_OUT_IMAGES;
         this.squadSize = DEFAULT_SQUAD_SIZE;
@@ -33,14 +31,11 @@ export class Server {
     @PrimaryColumn({ update: false })
     server: string; // server ("guild.id") snowflake
 
-    @Column({ nullable: true })
-    channel: string; // channel snowflake
-
-    @Column({ type: "simple-array", nullable: true })
-    dailyRollcallTime: string[];
-
     @Column(type => Roster)
     currentRoster: Roster;
+
+    @Column(type => Schedule)
+    schedule: Schedule;
 
     @Column()
     squadSize: number;

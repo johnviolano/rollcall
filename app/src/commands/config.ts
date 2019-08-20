@@ -24,7 +24,7 @@ export default class Config implements Command {
         const em = getManager();
         let entity = await em.findOne(Server, message.guild.id);
         if (!entity)
-            entity = new Server(message.guild.id, message.channel.id);
+            entity = new Server(message.guild.id);
 
         const sub = args.shift();
         switch (sub) {
