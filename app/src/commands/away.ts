@@ -25,8 +25,9 @@ export default class Away implements Command {
         if(args.length > 0) {
             let argument = args.shift();
             try {
-            const user = await DiscordClient.fetchUser(argument);
-            userId = user.id;
+                let input = argument.match(/[0-9]+/g);
+                const user = await DiscordClient.fetchUser(input[0]);
+                userId = user.id;
             } catch {
                 console.error("No user found for id");
                 embed.setDescription("Invalid user argument");

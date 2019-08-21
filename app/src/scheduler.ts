@@ -9,11 +9,10 @@ class RosterScheduler {
 
     async loadSchedules() {
         const em = getManager();
-        const servers = await em.find(Server, { where: { dailyRollcallTime: Not(IsNull()) } });
+        const servers = await em.find(Server);
         for (const s of servers) {
             this.startJobs(s);
         }
-        console.info(`Schedules loaded: ${servers.length}`);
     }
 
     async clearSchedule(serverId: string) {
@@ -29,11 +28,11 @@ class RosterScheduler {
         let server = await em.findOne(Server, serverId);
         if (server) {
             server.schedule.clear();
-            em.save(server);
+            await em.save(server);
         }
     }
 
-    async setSchedule(serverId: string, channel: string, rollcallTime: string[]) {
+    async setSchedule(serverId: string, channel: string, rollcallTime: string[], rollcallDays: string[]) {
 
         const em = getManager();
         let server = await em.findOne(Server, serverId);
@@ -47,7 +46,8 @@ class RosterScheduler {
         }
 
         // Set new channel and time
-        server.schedule = new Schedule(channel, rollcallTime);
+        server.schedule = new Schedule(channel, rollcallTime, rollcallDays);
+        console.log(server.schedule);
         await em.save(server);
 
         // Start cron jobs for the server
@@ -60,14 +60,19 @@ class RosterScheduler {
 
         if(!server.schedule.isScheduled()) return;
 
+        const hrNum = parseInt(server.schedule.dailyRollcallTime[0]);
+        const minNum = parseInt(server.schedule.dailyRollcallTime[1]);
+
+        let days = "*";
+        if(server.schedule.rollcallDays)
+            days = server.schedule.rollcallDays.join(); 
+
         // Create the rollcall and clear jobs
-        const rollcallJob = new CronJob(`0 ${server.schedule.dailyRollcallTime[1]} \
-                                        ${server.schedule.dailyRollcallTime[0]} * * *`,
+        const rollcallJob = new CronJob(`0 ${minNum} ${hrNum} * * ${days}`,
             () => Rollcaller.rollcall(server.server), null, true, "UTC");
 
-        const hrNum = parseInt(server.schedule.dailyRollcallTime[0]);
-        const clearHr = wrap(hrNum + 12, 0, 23);
-        const clearJob = new CronJob(`0 ${server.schedule.dailyRollcallTime[1]} ${clearHr} * * *`,
+        const clearHrNum = wrap(hrNum + 12, 0, 23);
+        const clearJob = new CronJob(`0 ${minNum} ${clearHrNum} * * ${days}`,
             () => { Rollcaller.clear(server.server) }, null, true, "UTC");
 
         rollcallJob.start();

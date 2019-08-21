@@ -30,6 +30,7 @@ async function run() {
         // Listen for commands
         await Listener.loadCommands();
         await Scheduler.loadSchedules();
+        console.info(`Schedules loaded`);
         DiscordClient.on("message", msg => Listener.handleMessage(msg));
     });
     try {

@@ -28,11 +28,12 @@ class DiscordListener {
     // Must be @Roll Call
     if (!msg.isMentioned(DiscordClient.user.id)) return;
 
-    // Remove all mentions
-    let stripped = Listener.removeMentions(msg);
-    let args = stripped.split(/ +/);
-    args = args.filter(arg => arg.trim() != "");
-    args = args.map(arg => arg.trim().toLowerCase());
+    // Sanatize input
+    let args = this.prepCommandArray(msg);
+    let firstWord = args.shift();
+
+    // Command did not start with bot mention, probably not a command
+    if(firstWord != `<@${DiscordClient.user.id.toLowerCase()}>`) return;
 
     let cmd = args.shift();
 
@@ -50,15 +51,11 @@ class DiscordListener {
     command.exec(msg, args)
   }
 
-  private removeMentions(msg: Message) {
-
-    let stripped = msg.cleanContent;
-    msg.mentions.users.forEach((mention: User, key: string) => {
-      let regex = new RegExp("@" + mention.username);
-      stripped = stripped.replace(regex, "");
-    });
-
-    return stripped;
+  private prepCommandArray(msg: Message) : string[] {
+    let args = msg.content.trim().split(/ +/);
+    args = args.filter(arg => arg.trim() != "");
+    args = args.map(arg => arg.trim().toLowerCase());
+    return args;
   }
 }
 

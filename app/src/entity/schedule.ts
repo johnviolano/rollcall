@@ -1,9 +1,10 @@
 import { Column } from "typeorm";
 
 export class Schedule {
-    constructor(channel: string, dailyRollcallTime: string[]) {
+    constructor(channel: string, dailyRollcallTime: string[], rollcallDays: string[]) {
         this.channel = channel;
         this.dailyRollcallTime = dailyRollcallTime;
+        this.rollcallDays = rollcallDays;
     }
 
     // Typeorm weirdness, cannot have a nullable embedded type (Schedule)
@@ -13,6 +14,7 @@ export class Schedule {
     clear() {
         this.channel = null;
         this.dailyRollcallTime = null;
+        this.rollcallDays = null;
     }
 
     @Column({ nullable: true })
@@ -21,4 +23,7 @@ export class Schedule {
 
     @Column({ type: "simple-array", nullable: true })
     dailyRollcallTime: string[];
+
+    @Column({ type: "simple-array", nullable: true })
+    rollcallDays: string[];
 }
