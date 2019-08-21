@@ -21,7 +21,7 @@ export default class Help implements Command {
         }
 
         const embed = new RichEmbed();
-        embed.setDescription(text).setTitle("Roll Call Help");
+        embed.setDescription(text);
         message.channel.send(embed);
     }
 };

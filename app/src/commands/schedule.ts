@@ -14,23 +14,24 @@ export default class Schedule implements Command {
     async exec(message: Message, args: string[]) {
 
         const embed = new RichEmbed();
-        embed.setTitle("Schedule");
+        embed.setTitle(`**${this.name}**`);
         embed.setDescription(await this.getDescription());
 
         if (args.length === 0) {
             const em = getManager();
-            const entity = await em.findOne(Server, message.guild.id);
-            if(entity && entity.server) {
+            const server = await em.findOne(Server, message.guild.id);
+            if(server && server.schedule.isScheduled()) {
                 embed.setDescription(`Roll call scheduled in this channel for \
-                    ${entity.schedule.dailyRollcallTime[0]}:${entity.schedule.dailyRollcallTime[1]}`);
+                    ${server.schedule.dailyRollcallTime[0]}:${server.schedule.dailyRollcallTime[1].padStart(2, '0')}`);
             }
-            else
+            else {
                 embed.setDescription("No roll call scheduled for this channel.")
+            }
             message.channel.send(embed);
             return;
         }
 
-        var command = args.shift();
+        let command = args.shift();
 
         // Clear existing schedule
         if (command === "clear") {
@@ -51,9 +52,9 @@ export default class Schedule implements Command {
             message.channel.send(embed);
             return;
         }
-        var timeArray = command.split(":");
-        var hour = parseInt(timeArray[0]);
-        var min = parseInt(timeArray[1]);
+        let timeArray = command.split(":");
+        let hour = parseInt(timeArray[0]);
+        let min = parseInt(timeArray[1]);
         if (hour < 0 || hour > 24 || min < 0 || min > 59) {
             message.channel.send(embed);
             return;

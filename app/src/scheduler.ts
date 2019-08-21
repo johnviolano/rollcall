@@ -16,70 +16,72 @@ class RosterScheduler {
         console.info(`Schedules loaded: ${servers.length}`);
     }
 
-    async clearSchedule(server: string) {
+    async clearSchedule(serverId: string) {
 
         // Remove jobs from runtime
-        this.stopJobs(server);
+        this.stopJobs(serverId);
 
         // Clear any existing rosters
-        await Rollcaller.clear(server)
+        await Rollcaller.clear(serverId)
 
         // Remove schedule
         const em = getManager();
-        let entity = await em.findOne(Server, server);
-        if (entity) {
-            entity.schedule = null;
-            em.save(entity);
+        let server = await em.findOne(Server, serverId);
+        if (server) {
+            server.schedule.clear();
+            em.save(server);
         }
     }
 
-    async setSchedule(server: string, channel: string, rollcallTime: string[]) {
+    async setSchedule(serverId: string, channel: string, rollcallTime: string[]) {
 
         const em = getManager();
-        let entity = await em.findOne(Server, server);
+        let server = await em.findOne(Server, serverId);
         // If no server config exists at all, create one with a schedule
-        if (!entity) {
-            entity = new Server(server);
+        if (!server) {
+            server = new Server(serverId);
         } else {
             // Clear any existing schedule and roster
-            await this.clearSchedule(server);
+            await this.clearSchedule(serverId);
 
         }
 
         // Set new channel and time
-        entity.schedule = new Schedule(channel, rollcallTime);
-        await em.save(entity);
+        server.schedule = new Schedule(channel, rollcallTime);
+        await em.save(server);
 
         // Start cron jobs for the server
-        this.startJobs(entity);
+        this.startJobs(server);
     }
 
     private startJobs(server: Server) {
 
         this.stopJobs(server.server);
 
+        if(!server.schedule.isScheduled()) return;
+
         // Create the rollcall and clear jobs
-        const rollcall = new CronJob(`0 ${server.schedule.dailyRollcallTime[1]} \
+        const rollcallJob = new CronJob(`0 ${server.schedule.dailyRollcallTime[1]} \
                                         ${server.schedule.dailyRollcallTime[0]} * * *`,
             () => Rollcaller.rollcall(server.server), null, true, "UTC");
 
         const hrNum = parseInt(server.schedule.dailyRollcallTime[0]);
         const clearHr = wrap(hrNum + 12, 0, 23);
-        const clear = new CronJob(`0 ${server.schedule.dailyRollcallTime[1]} ${clearHr} * * *`,
+        const clearJob = new CronJob(`0 ${server.schedule.dailyRollcallTime[1]} ${clearHr} * * *`,
             () => { Rollcaller.clear(server.server) }, null, true, "UTC");
 
-        rollcall.start();
-        clear.start();
-        this.cronJobs.set(server.server, [rollcall, clear]);
+        rollcallJob.start();
+        clearJob.start();
+        this.cronJobs.set(server.server, [rollcallJob, clearJob]);
     }
 
-    private stopJobs(server: string) {
+    private stopJobs(serverId: string) {
         // Remove jobs from runtime
-        if (this.cronJobs.has(server)) {
-            const oldJobs = this.cronJobs.get(server);
+        if (this.cronJobs.has(serverId)) {
+            const oldJobs = this.cronJobs.get(serverId);
             oldJobs[0].stop();
             oldJobs[1].stop();
-            this.cronJobs.delete(server);
+            this.cronJobs.delete(serverId);
         }
     }
 };

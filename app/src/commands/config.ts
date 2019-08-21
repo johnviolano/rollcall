@@ -13,7 +13,7 @@ export default class Config implements Command {
 
     async exec(message: Message, args: string[]) {
         const embed = new RichEmbed();
-        embed.setTitle("Config");
+        embed.setTitle(`**${this.name}**`);
         embed.setDescription(await this.getDescription);
 
         if (args.length === 1) {
@@ -22,9 +22,9 @@ export default class Config implements Command {
         }
 
         const em = getManager();
-        let entity = await em.findOne(Server, message.guild.id);
-        if (!entity)
-            entity = new Server(message.guild.id);
+        let server = await em.findOne(Server, message.guild.id);
+        if (!server)
+            server = new Server(message.guild.id);
 
         const sub = args.shift();
         switch (sub) {
@@ -33,10 +33,10 @@ export default class Config implements Command {
                 if (Number.isNaN(size)) {
                     break;
                 } else {
-                    entity.squadSize = size;
+                    server.squadSize = size;
                     embed.setDescription("Squad size updated for channel.");
                     message.channel.send(embed);
-                    em.save(entity);
+                    em.save(server);
                     return;
                 }
             }
@@ -44,20 +44,20 @@ export default class Config implements Command {
                 const token = args.shift();
                 if (!token)
                     break;
-                entity.inTokens.push(token);
+                server.inTokens.push(token);
                 embed.setDescription(`${token} added as in indicator for server.`);
                 message.channel.send(embed);
-                em.save(entity);
+                em.save(server);
                 return;
             }
             case "add-out": {
                 const token = args.shift();
                 if (!token)
                     break;
-                entity.outTokens.push(token);
+                server.outTokens.push(token);
                 embed.setDescription(`${token} added as out indicator for server.`);
                 message.channel.send(embed);
-                em.save(entity);
+                em.save(server);
                 return;
             }
             case "add-hype": {
@@ -66,7 +66,7 @@ export default class Config implements Command {
                     break;
                 try {
                     await probe(token);
-                    entity.allInGifUrls.push(token);
+                    server.allInGifUrls.push(token);
                     embed.setDescription(`${token} added as a hype image for server.`);
                     message.channel.send(embed);
                 } catch {

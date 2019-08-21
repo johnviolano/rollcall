@@ -1,19 +1,23 @@
 import { getManager } from "typeorm";
 import { Server } from "./entity/server";
+import { Roster } from "./entity/roster";
 import { RichEmbed, TextChannel, Message } from "discord.js";
 import { DiscordClient } from "./discord-client";
-import { Roster } from "./entity/roster";
 
 export default class Rollcaller {
-    static async rollcall(server: string) {
+    static async rollcall(serverId: string) {
 
         const em = getManager();
-        const entity = await em.findOne(Server, server);
-        if(!entity) return;
+        const server = await em.findOne(Server, serverId);
 
-        const embed = await Rollcaller.createEmbed(entity);
-        const mentions = Rollcaller.getMentions(entity);
-        const channel = DiscordClient.channels.get(entity.schedule.channel) as TextChannel;
+        if(!server || !server.schedule.isScheduled()) {
+            console.error("There is no schedule for this channel, cannot rollcall!")
+            return;
+        }
+
+        const embed = await Rollcaller.createEmbed(server);
+        const mentions = Rollcaller.getMentions(server);
+        const channel = DiscordClient.channels.get(server.schedule.channel) as TextChannel;
 
         const pins = await channel.fetchPinnedMessages();
         for (const p of pins.values()) {
@@ -23,50 +27,57 @@ export default class Rollcaller {
 
         const message = await channel.send(mentions, embed) as Message;
         message.pin();
-        entity.currentRoster.message = message.id;
-        em.save(entity);
+        server.currentRoster.message = message.id;
+        em.save(server);
     }
 
-    static async update(server: string) {
+    static async update(serverId: string) {
 
         const em = getManager();
-        const entity = await em.findOne(Server, server);
-        if(!entity) return;
+        const server = await em.findOne(Server, serverId);
 
-        if (!entity.currentRoster.message) {
-            Rollcaller.rollcall(server);
+        if(!server || !server.schedule.isScheduled()) {
+            console.error("There is no schedule for this channel, cannot rollcall!")
+            return;
+        }
+
+        if (!server.currentRoster.message) {
+            Rollcaller.rollcall(serverId);
         }
         else {
             try {
-                const channel = DiscordClient.channels.get(entity.schedule.channel) as TextChannel;
-                const message = await channel.fetchMessage(entity.currentRoster.message);
-                const embed = await Rollcaller.createEmbed(entity);
+                const channel = DiscordClient.channels.get(server.schedule.channel) as TextChannel;
+                const message = await channel.fetchMessage(server.currentRoster.message);
+                const embed = await Rollcaller.createEmbed(server);
                 let mentions = "";
                 // only send mentions if the rollcall already fired for the day, i.e. be less spammy
                 if(message.content)
-                    mentions = Rollcaller.getMentions(entity);
+                    mentions = Rollcaller.getMentions(server);
                 message.edit(mentions, embed);
             } catch(error) {
-                console.error(error);
-                console.info("Attempting to recover by creating new message.");
+                console.info("Failed to find existing message. Attempting to recover by creating new message.");
                 // Message may have been deleted by user
-                Rollcaller.rollcall(server);
+                Rollcaller.rollcall(serverId);
             }
         }
     }
 
-    static async clear(server: string) {
+    static async clear(serverId: string) {
 
         const em = getManager();
-        const entity = await em.findOne(Server, server);
-        if (!entity) return;
+        const server = await em.findOne(Server, serverId);
+        if (!server) return;
 
-        entity.currentRoster = new Roster();
-        em.save(entity);
+        server.currentRoster = new Roster();
+        em.save(server);
 
-        if(!entity.schedule.channel) return;
 
-        const channel = DiscordClient.channels.get(entity.schedule.channel) as TextChannel;
+        if(!server.schedule.isScheduled()) {
+            console.error("There is no schedule for this channel, cannot clear rollcall!")
+            return;
+        }
+
+        const channel = DiscordClient.channels.get(server.schedule.channel) as TextChannel;
         const pins = await channel.fetchPinnedMessages();
         for (const p of pins.values()) {
             if (p.author === DiscordClient.user)
@@ -76,7 +87,7 @@ export default class Rollcaller {
 
     private static async createEmbed(server: Server): Promise<RichEmbed> {
 
-        var embed = new RichEmbed();
+        let embed = new RichEmbed();
         embed.setColor("RED");
 
         const inIndicator = server.inTokens.slice(-1)[0];
@@ -128,6 +139,11 @@ export default class Rollcaller {
     }
 
     private static getMentions(server: Server): string {
+        if(!server.schedule.isScheduled()) {
+            console.error("There is no schedule for this channel, cannot get mentions!")
+            return;
+        }
+
         // Get all members of the channel
         const channel = DiscordClient.channels.get(server.schedule.channel) as TextChannel;
         let members = channel.members.filter(m => !m.user.bot);
