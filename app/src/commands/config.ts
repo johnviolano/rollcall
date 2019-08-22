@@ -2,13 +2,13 @@ import { Command } from "../command-interface"
 import { Message, RichEmbed } from "discord.js";
 import { getManager } from "typeorm";
 import { Server } from "../entity/server";
-import { probe } from "probe-image-size"
+import probe = require( "probe-image-size");
 
 export default class Config implements Command {
     readonly name = "config";
     async getDescription(server?: string): Promise<string> {
         return `Sets a configuration value.
-                Example - @Roll Call config [ squad-size | add-in | add-out | add-hype ] <value>`; 
+                Example - @Roll Call config [ squad-size | add-in | add-out | add-hype ] <value>`;
     }
 
     async exec(message: Message, args: string[]) {
@@ -69,7 +69,7 @@ export default class Config implements Command {
                     server.allInGifUrls.push(token);
                     embed.setDescription(`${token} added as a hype image for server.`);
                     message.channel.send(embed);
-                } catch(error) {
+                } catch (error) {
                     console.error(`Failed to set hype image\n${error}`);
                     message.channel.send(embed);
                 }
