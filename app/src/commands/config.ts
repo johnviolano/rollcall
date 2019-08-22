@@ -14,7 +14,7 @@ export default class Config implements Command {
     async exec(message: Message, args: string[]) {
         const embed = new RichEmbed();
         embed.setTitle(`**${this.name}**`);
-        embed.setDescription(await this.getDescription);
+        embed.setDescription(await this.getDescription());
 
         if (args.length === 1) {
             message.channel.send(embed);
@@ -69,7 +69,8 @@ export default class Config implements Command {
                     server.allInGifUrls.push(token);
                     embed.setDescription(`${token} added as a hype image for server.`);
                     message.channel.send(embed);
-                } catch {
+                } catch(error) {
+                    console.error(`Failed to set hype image\n${error}`);
                     message.channel.send(embed);
                 }
                 return;
