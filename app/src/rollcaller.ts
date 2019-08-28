@@ -89,6 +89,9 @@ export default class Rollcaller {
 
         let embed = new RichEmbed();
         embed.setColor("RED");
+        embed.setDescription("");
+        if(server.message)
+            embed.setDescription(server.message);
 
         const inIndicator = server.inTokens.slice(-1)[0];
         const outIndicator = server.outTokens.slice(-1)[0];

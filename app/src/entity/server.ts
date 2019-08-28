@@ -53,4 +53,8 @@ export class Server {
     @Column({ type: "simple-array" })
     away: string[];
 
+    @Column({nullable:true})
+    message: string;
+
+
 }
