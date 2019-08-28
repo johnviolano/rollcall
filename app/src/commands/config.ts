@@ -60,6 +60,7 @@ export default class Config implements Command {
                     await probe(token);
                     server.allInGifUrls.push(token);
                     embed.setDescription(`${token} added as a hype image for server.`);
+                    em.save(server);
                     break;
                 } catch (error) {
                     console.error(`Failed to set hype image\n${error}`);
