@@ -15,7 +15,7 @@ services:
         - db_password
     ports:
       - '5432:5432'
-    restart: always
+    restart: on-failure
 
   app:
     build: ./app
@@ -27,7 +27,7 @@ services:
         - discord_token
     depends_on:
       - db
-    restart: always
+    restart: on-failure
 
 secrets:
   db_password:
