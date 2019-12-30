@@ -40,12 +40,12 @@ export default class Away implements Command {
         if (i > -1) {
             // User returning
             server.away.splice(i, 1);
-            embed.setDescription(`Welcome back <@${userId}>! You will be pinged daily.`);
+            embed.setDescription(`Welcome back <@@!${userId}>! You will be pinged daily.`);
         } else {
             // User departing
             if (!server.away.includes(userId))
                 server.away.push(userId);
-            embed.setDescription(`OK, <@${userId}> won't be pinged until you tell me to.`);
+            embed.setDescription(`OK, <@@!${userId}> won't be pinged until you tell me to.`);
         }
 
         message.channel.send(embed)

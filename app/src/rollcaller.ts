@@ -158,7 +158,7 @@ export default class Rollcaller {
         members = members.filter(m => !server.currentRoster.in.includes(m.user.id));
         members = members.filter(m => !server.currentRoster.out.includes(m.user.id));
 
-        const mentions = members.map(m => `<@${m.id}>`).join(" ");
+        const mentions = members.map(m => `<@@!${m.id}>`).join(" ");
         return mentions;
     }
 }
