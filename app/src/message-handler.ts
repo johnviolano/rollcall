@@ -34,7 +34,7 @@ class DiscordListener {
 
 
     // Command did not start with bot mention, probably not a command
-    if(firstWord != `<@!${DiscordClient.user.id.toLowerCase()}>`) return;
+    if(!firstWord.includes(DiscordClient.user.id) return;
 
     let cmd = args.shift();
 
