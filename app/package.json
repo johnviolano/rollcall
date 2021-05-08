@@ -16,7 +16,7 @@
     "@types/node": "^12.7.1",
     "discord.js-typings": "github:discordjs/discord.js-typings",
     "tslint": "^5.18.0",
-    "typeorm": "^0.2.18",
+    "typeorm": "^0.2.25",
     "typescript": "^3.5.3"
   },
   "scripts": {
